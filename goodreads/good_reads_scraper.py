@@ -3,7 +3,6 @@ import requests
 import csv
 import time
 
-print("test")
 books = []
 url = 'https://www.goodreads.com/list/show/32774.Most_Interesting_World'
 website = 'https://www.goodreads.com'
@@ -11,13 +10,14 @@ response = requests.get(url, timeout=10)
 content = BeautifulSoup(response.content, "html.parser")
 all_links = []
 pages = content.find_all(attrs={"class": "next_page"})
-# print(content.find_all(attrs={"class": "next_page"}))
 def fill_books():
-    time.sleep(2)
     # the table of books for this page
     table_data = content.find_all("tr")
-    count = 0
     for item in table_data:
+
+        # Adding in sleep to avoid website request overload
+        time.sleep(2)
+
         book = {}
 
         # Title
@@ -46,12 +46,10 @@ def fill_books():
         # Characters
         detail_tags = temp_content.find("div", class_="uitext", id="bookDataBox").findChildren("div")
         flag = False
-        book_characters = ""
         for detail in detail_tags:
             if (flag):
                 b_characters = detail.find_all("a")
                 flag = False
-            # print(detail.get_text())
             if (detail.get_text() == "Characters"):
                 flag = True
         book_characters = []
