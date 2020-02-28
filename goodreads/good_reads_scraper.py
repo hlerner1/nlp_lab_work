@@ -35,32 +35,48 @@ def fill_books():
         temp_content = BeautifulSoup(temp_response.content, "html.parser")
 
         # Summary
-        span_tags = temp_content.find("div", class_="readable stacked", id="description").findChildren("span")
-        book_summary = ""
-        if (len(span_tags)>1):
-            book_summary = span_tags[1].get_text()
-        elif(len(span_tags) == 1):
-            book_summary = span_tags.get_text()
-        book["book summary"] = book_summary
+        span_tags = temp_content.find("div", class_="readable stacked", id="description")
+        if (span_tags != None):
+            span_tags = span_tags.findChildren("span")
+            book_summary = ""
+            if (len(span_tags)>1):
+                book_summary = span_tags[1].get_text()
+            elif(len(span_tags) == 1):
+                book_summary = span_tags[0].get_text()
+            book["book summary"] = book_summary
+        else:
+            book["book summary"] = "No Summary Availible"
 
         # Characters
         detail_tags = temp_content.find("div", class_="uitext", id="bookDataBox").findChildren("div")
         flag = False
+        b_characters = None
         for detail in detail_tags:
             if (flag):
                 b_characters = detail.find_all("a")
                 flag = False
             if (detail.get_text() == "Characters"):
                 flag = True
-        book_characters = []
-        for character in range(len(b_characters)-1):
-            b_characters[character] = b_characters[character].get_text()
-            if (b_characters[character] != '...more' and b_characters[character] != '...less'):
-                book_characters.append(b_characters[character])
-        book["characters"] = book_characters
+        if (b_characters == None):
+            book["characters"] = "No Characters Availible"
+        else:
+            if (type(b_characters[0]) == str):
+                book_characters = b_characters
+            else:
+                book_characters = []
+                for character in range(len(b_characters)-1):
+                    if (type(b_characters[character]) != str):
+                        b_characters[character] = b_characters[character].get_text()
+                    else:
+                        print(b_characters[character])
+                    if (b_characters[character] != '...more' and b_characters[character] != '...less'):
+                        book_characters.append(b_characters[character])
+            book["characters"] = book_characters
         books.append(book)
-
+count = 0
 while (len(content.find_all(attrs={"class": "next_page disabled"})) == 0):
+    print(count)
+    count += 1
     fill_books()
     pages = content.find_all(attrs={"class": "next_page"})
     link = pages[0]['href']
